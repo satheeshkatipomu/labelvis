@@ -5,7 +5,7 @@ This is a small python utility to quickly visualize bounding-box annotations/lab
 
 ## Installation
 ```
-git clone 
+git clone https://github.com/satheeshkatipomu/labelvis.git
 cd labelvis
 pip install -e .
 ```
