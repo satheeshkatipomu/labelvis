@@ -13,7 +13,7 @@ pip install -e .
 ## Usage
 ### COCO
 ```
-from labelvis import LabelVisualizer
+from labelvis.labelvis import LabelVisualizer
 
 imgs_path = "./images"
 annotations_path = "./annotations/trainval.json"
