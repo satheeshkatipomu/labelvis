@@ -7,7 +7,7 @@ This is a small python utility to quickly visualize bounding-box annotations/lab
 
 From PyPI
 ```
-pip install modelstore
+pip install labelvis
 ```
 
 From source
