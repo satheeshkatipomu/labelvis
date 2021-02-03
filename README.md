@@ -4,6 +4,13 @@ This is a small python utility to quickly visualize bounding-box annotations/lab
 ![PyPI - Python Version](https://img.shields.io/badge/python-3.7%7C3.8-blue)
 
 ## Installation
+
+From PyPI
+```
+pip install modelstore
+```
+
+From source
 ```
 git clone https://github.com/satheeshkatipomu/labelvis.git
 cd labelvis
