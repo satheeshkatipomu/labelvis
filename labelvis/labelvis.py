@@ -87,7 +87,7 @@ class LabelVisualizer:
 
     def _check_annontations_dir(self) -> bool:
 
-        if self.annotations_format in ["coco","simple_json"]:
+        if self.annotations_format in ["coco", "simple_json"]:
             return self.annotations_path.suffix == ".json"
 
         elif self.annotations_format == "manifest":

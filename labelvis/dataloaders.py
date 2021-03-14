@@ -388,14 +388,14 @@ class SimpleJsonDataLoader(BaseDataLoader):
         ]
         self.predictions_images = list(self.predictions.keys())
         self._to_df()
-    
+
     def __len__(self):
         return len(self.images)
 
     def get_class_map(self):
         return self.class_map
-    
-    def read_preds(self,preds_path: str):
+
+    def read_preds(self, preds_path: str):
         with open(preds_path, "r") as pp:
             preds = json.load(pp)
         return preds

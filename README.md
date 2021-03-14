@@ -24,7 +24,7 @@ from labelvis.labelvis import LabelVisualizer
 
 imgs_path = "./images"
 annotations_path = "./annotations/trainval.json"
-annotations_format = "coco" #["coco","pascal","manifest","yolo"]
+annotations_format = "coco" #["coco","pascal","manifest","yolo","simple_json"]
 img_size = 256
 labelvis = LabelVisualizer(imgs_path,annotations_path,annotations_format,img_size=img_size)
 
@@ -74,4 +74,85 @@ annotations_path = "/path/to/annotations"
          |_ img002.txt
          |_ img003.txt
          ...
+```
+##### Simple JSON
+```
+
+annotations_path = "/path/to/simple.json"
+{
+    "image1.jpg": [
+        {
+            "bbox": [100, 11, 452, 332],
+            "confidence": 0.982,
+            "classname": "label1"
+        },
+
+        {
+            "bbox": [200, 0, 356, 89],
+            "confidence": 0.76,
+            "classname": "label2"
+        },
+
+    ],
+
+    "image2.jpg": [
+        {
+            "bbox": [145, 120, 387, 221]
+            "confidence": 0.87,
+            "classname": "label2"
+        }
+    ],
+...
+
+}
+
+
+```
+
+### Filters
+```show_only_images_with_labels```
+```
+#Load visualizer with any format
+from labelvis.labelvis import LabelVisualizer
+imgs_path = "../test/"
+annotations_path = "./simple.json"
+annotations_format = "simple_json" #["coco","pascal","manifest","yolo","simple_json"]
+img_size = 1024
+labelvis = LabelVisualizer(imgs_path,annotations_path,annotations_format,img_size=img_size)
+
+#Show batch
+num_images = 9 #Number Images to Visualize
+labelvis.show_batch(num_imgs=num_images,show_only_images_with_labels=True) #Shows images with atleast one annotation.
+```
+
+```show_only_images_with_no_labels```
+```
+#Load visualizer with any format
+from labelvis.labelvis import LabelVisualizer
+imgs_path = "../test/"
+annotations_path = "./simple.json"
+annotations_format = "simple_json" #["coco","pascal","manifest","yolo","simple_json"]
+img_size = 1024
+labelvis = LabelVisualizer(imgs_path,annotations_path,annotations_format,img_size=img_size)
+
+#Show batch
+num_images = 9 #Number Images to Visualize
+labelvis.show_batch(num_imgs=num_images,show_only_images_with_no_labels=True) #Shows images with  no annotation.
+```
+
+```filter_categories```
+```
+#Load visualizer with any format
+imgs_path = "./images/"
+annotations_path = "./output.manifest"
+annotations_format = "manifest" #["coco","pascal","manifest","yolo","simple_json"]
+img_size = 512
+labelvis = LabelVisualizer(imgs_path,annotations_path,annotations_format,img_size=img_size)
+
+print(labelvis.dataloader.class_map)
+{0: 'category1', 2: 'category2', 1: 'category3', 4: 'category4', 3: 'category5'}
+
+#Show batch
+num_images = 9 #Number Images to Visualize
+labelvis.show_batch(num_imgs=num_images,filter_categories=[4,3]) #Shows images with only category 4 and 3 annotations.
 ```

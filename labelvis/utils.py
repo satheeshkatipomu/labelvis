@@ -14,7 +14,7 @@ from .dataloaders import (
     PascalDataLoader,
     YoloDataLoader,
     ManifestDataLoader,
-    SimpleJsonDataLoader
+    SimpleJsonDataLoader,
 )
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
@@ -61,7 +61,7 @@ def get_dataloader(
         )
     elif annotations_format == "simple_json":
         return SimpleJsonDataLoader(
-            imgs_path, annotations_path, resize=resize,threshold=0.05
+            imgs_path, annotations_path, resize=resize, threshold=0.05
         )
     else:
         raise NotImplementedError
