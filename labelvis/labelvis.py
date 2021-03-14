@@ -11,10 +11,7 @@ import math
 import traceback
 import copy
 import collections
-import textwrap
-from .utils import _plot_boxes, get_dataloader
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
+from .utils import _plot_boxes, get_dataloader, render_grid_mpl, render_grid_pil
 from typing import Dict, List, Union, Optional, Tuple
 from .config import *
 
@@ -109,6 +106,7 @@ class LabelVisualizer:
         num_imgs: Optional[int] = 9,
         previous: Optional[bool] = False,
         save: Optional[bool] = False,
+        render: str = "PIL",
     ):
 
         if previous and len(self.previous_batch):
@@ -135,17 +133,6 @@ class LabelVisualizer:
                 print(f"Could not plot bounding boxes for {img_name}")
                 traceback.print_exc()
                 continue
-            # drawn_img = ImageOps.expand(drawn_img, border=IMAGE_BORDER, fill=(255,255,255))
-
-            # lines = textwrap.wrap(img_name, width=32)
-            # y_text = IMAGE_BORDER//2 if len(lines) <= 1 else 0
-            # dimg = ImageDraw.Draw(drawn_img)
-            # font = dimg.getfont()
-            # w = drawn_img.size[0]
-            # for line in lines:
-            #     width, height = font.getsize(line)
-            #     dimg.multiline_text(((w-width)//2, y_text), line, font=font, fill=(0,0,0))
-            #     y_text += height
 
             drawn_imgs.append(drawn_img)
 
@@ -160,41 +147,31 @@ class LabelVisualizer:
 
         cols = 2 if num_imgs <= 6 else 3
         rows = math.ceil(num_imgs / cols)
-        fig = plt.figure(
-            figsize=(
-                (rows * self.img_size + 3 * IMAGE_BORDER * rows) / 72,
-                (cols * self.img_size + 3 * IMAGE_BORDER * cols) / 72,
+        if render.lower() == "mpl":
+            render_grid_mpl(
+                drawn_imgs,
+                image_names,
+                num_imgs,
+                cols,
+                rows,
+                self.img_size,
+                IMAGE_BORDER,
+                save,
+                self.annotations_format,
             )
-        )
-        grid = ImageGrid(
-            fig,
-            111,  # similar to subplot(111)
-            nrows_ncols=(rows, cols),  # creates 2x2 grid of axes
-            axes_pad=0.5,  # pad between axes in inch
-        )
-
-        for ax, im, im_name in zip(grid, drawn_imgs, image_names):
-            # Iterating over the grid returns the Axes.
-            ax.imshow(im)
-            ax.set_title(im_name)
-            ax.axis("off")
-            ax.set_xticks([])
-            ax.set_yticks([])
-
-        for ax in grid[num_imgs:]:
-            ax.axis("off")
-
-        # plt.show()
-        plt.close()
-        # width = cols*(self.img_size+2*IMAGE_BORDER)
-        # height = rows*(self.img_size+2*IMAGE_BORDER)
-        # canvas = Image.new('RGB',(width,height),color=(255,255,255))
-        # idx = 0
-        # for y in range(0,height,self.img_size+2*IMAGE_BORDER+1):
-        #     for x in range(0,width,self.img_size+2*IMAGE_BORDER+1):
-        #         if idx < num_imgs:
-        #             canvas.paste(drawn_imgs[idx],(x,y))
-        #             idx += 1
-        # if save:
-        #     canvas.save(self.annotations_format+"_vis.jpg")
-        # return canvas
+        elif render.lower() == "pil":
+            return render_grid_pil(
+                drawn_imgs,
+                image_names,
+                num_imgs,
+                cols,
+                rows,
+                self.img_size,
+                IMAGE_BORDER,
+                save,
+                self.annotations_format,
+            )
+        else:
+            raise RuntimeError(
+                "Invalid Image grid rendering format, should be either mpl or pil."
+            )
