@@ -6,7 +6,7 @@ Created: Wednesday, 2nd December 2020 10:52:48 am
 import numpy as np
 from pathlib import Path
 import textwrap
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageOps
 from typing import Optional, Dict, Tuple, List
 import bounding_box.bounding_box as bb
 from .dataloaders import (
@@ -22,13 +22,19 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 def _plot_boxes(
     img: Image,
     bboxes: np.ndarray,
+    scores: Optional[List] = None,
     class_map: Optional[Dict] = dict(),
     class_color_map: Optional[Dict] = dict(),
 ):
     draw_img = np.array(img)
-    for box in bboxes:
+    for i, box in enumerate(bboxes):
         bbox = list(map(lambda x: max(0, int(x)), box[:-1]))
-        category = class_map.get(int(box[-1]), str(int(box[-1])))
+        if not isinstance(box[-1], str):
+            category = class_map.get(int(box[-1]), str(int(box[-1])))
+        else:
+            category = box[-1]
+        if scores is not None:
+            category = category + ":" + round(scores[i], 2)
         color = class_color_map.get(int(box[-1]), "green")
         bb.add(draw_img, *bbox, category, color=color)
     return Image.fromarray(draw_img)

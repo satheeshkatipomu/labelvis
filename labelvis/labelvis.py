@@ -107,12 +107,13 @@ class LabelVisualizer:
         previous: Optional[bool] = False,
         save: Optional[bool] = False,
         render: str = "PIL",
+        **kwargs,
     ):
 
         if previous and len(self.previous_batch):
             batch = self.previous_batch
         else:
-            batch = self.dataloader.get_batch(num_imgs)
+            batch = self.dataloader.get_batch(num_imgs, **kwargs)
             self.previous_batch = batch
 
         drawn_imgs = []
@@ -121,10 +122,12 @@ class LabelVisualizer:
             img_name = img_ann_info["img"]["image_name"]
             img = img_ann_info["img"]["image"]
             anns = img_ann_info["anns"]
+            scores = img_ann_info.get("scores", None)
             try:
                 drawn_img = _plot_boxes(
                     img,
                     anns,
+                    scores,
                     class_map=self.class_map,
                     class_color_map=self.class_color_map,
                 )
