@@ -14,6 +14,7 @@ from .dataloaders import (
     PascalDataLoader,
     YoloDataLoader,
     ManifestDataLoader,
+    SimpleJsonDataLoader
 )
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
@@ -34,7 +35,7 @@ def _plot_boxes(
         else:
             category = box[-1]
         if scores is not None:
-            category = category + ":" + round(scores[i], 2)
+            category = category + ":" + str(round(scores[i], 2))
         color = class_color_map.get(int(box[-1]), "green")
         bb.add(draw_img, *bbox, category, color=color)
     return Image.fromarray(draw_img)
@@ -57,6 +58,10 @@ def get_dataloader(
     elif annotations_format == "manifest":
         return ManifestDataLoader(
             imgs_path, annotations_path, resize=resize, task_idx=task_idx
+        )
+    elif annotations_format == "simple_json":
+        return SimpleJsonDataLoader(
+            imgs_path, annotations_path, resize=resize,threshold=0.05
         )
     else:
         raise NotImplementedError

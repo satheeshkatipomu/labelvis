@@ -24,9 +24,10 @@ class BaseDataLoader:
         img_bboxes = []
         scores = []
         for i, row in img_df.iterrows():
-            img_bboxes.append(row["bbox"] + [row["category"]])
-            if "score" in row.keys():
-                scores.append(row["score"])
+            if row["annotation"] is not None and row["category"] is not None:
+                img_bboxes.append(row["annotation"] + [row["category"]])
+                if "score" in row.keys():
+                    scores.append(row["score"])
 
         img, anns = Resizer(self.resize)({"image_path": index, "anns": img_bboxes})
         item = {"img": {"image_name": index.name, "image": img}, "anns": anns}
@@ -57,7 +58,7 @@ class BaseDataLoader:
             "show_only_images_with_no_labels" in kwargs
             and kwargs["show_only_images_with_no_labels"] == True
         ):
-            df = self.df[self.df["annotation"].isna() & self.df["category"].sina()]
+            df = self.df[self.df["annotation"].isna() & self.df["category"].isna()]
             return df
 
         if (
@@ -124,7 +125,7 @@ class COCODataLoader(BaseDataLoader):
             img_anns = self.coco.loadAnns(img_annids)
             for ann in img_anns:
                 annotations.append(ann["bbox"])
-                categoires.append(self.class_map[ann["category_id"]])
+                categoires.append(ann["category_id"])
                 image_paths.append(img_path)
             if len(img_anns) < 1:
                 annotations.append(None)
@@ -191,7 +192,7 @@ class PascalDataLoader(BaseDataLoader):
                     h = int(box.find("ymax").text) - y
                     annotations.append([x, y, w, h])
                     image_paths.append(img_path)
-                    categoires.append(category)
+                    categoires.append(category_id)
 
         for img_path in self.images:
             if img_path not in image_paths:
@@ -344,7 +345,7 @@ class ManifestDataLoader(BaseDataLoader):
                 top = ann["top"]
                 width = ann["width"]
                 height = ann["height"]
-                category = self.class_map[ann["class_id"]]
+                category = ann["class_id"]
                 image_paths.append(img_path)
                 annotations.append([left, top, width, height])
                 categoires.append(category)
@@ -374,16 +375,27 @@ class SimpleJsonDataLoader(BaseDataLoader):
         imgs_path: Path,
         annontations_path: Path,
         resize: Optional[Tuple] = (512, 512),
-        threshold: float = 0.2,
+        threshold: float = 0.05,
     ):
+        super().__init__()
+        self.imgs_path = imgs_path
+        self.threshold = threshold
+        self.class_map = dict()
+        self.resize = resize
         self.predictions = self.read_preds(annontations_path)
         self.images = [
             p for p in Path(self.imgs_path).glob("**/*") if p.suffix in IMAGE_EXT
         ]
         self.predictions_images = list(self.predictions.keys())
         self._to_df()
+    
+    def __len__(self):
+        return len(self.images)
 
-    def read_preds(preds_path: str):
+    def get_class_map(self):
+        return self.class_map
+    
+    def read_preds(self,preds_path: str):
         with open(preds_path, "r") as pp:
             preds = json.load(pp)
         return preds
@@ -396,13 +408,22 @@ class SimpleJsonDataLoader(BaseDataLoader):
         for img_name in self.predictions_images:
             img_path = self.imgs_path.joinpath(img_name)
             for bboxes in self.predictions[img_name]:
-                bbox = bboxes["bbox"]
-                bbox[2] = bbox[2] - bbox[0]
-                bbox[3] = bbox[3] - bbox[1]
-                image_paths.append(img_path)
-                annotations.append(bbox)
-                categoires.append(bboxes["classname"])
-                scores.append(bboxes["confidence"])
+                if bboxes["confidence"] >= self.threshold:
+                    bbox = bboxes["bbox"]
+                    bbox[2] = bbox[2] - bbox[0]
+                    bbox[3] = bbox[3] - bbox[1]
+                    image_paths.append(img_path)
+                    annotations.append(bbox)
+                    category = bboxes["classname"]
+                    if category in self.class_map.values():
+                        category_id = [
+                            k for k, v in self.class_map.items() if v == category
+                        ][0]
+                    else:
+                        category_id = len(self.class_map)
+                        self.class_map[category_id] = category
+                    categoires.append(category_id)
+                    scores.append(bboxes["confidence"])
             if len(self.predictions[img_name]) < 1:
                 annotations.append(None)
                 image_paths.append(img_path)
