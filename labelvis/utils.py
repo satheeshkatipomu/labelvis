@@ -26,6 +26,7 @@ def _plot_boxes(
     scores: Optional[List] = None,
     class_map: Optional[Dict] = dict(),
     class_color_map: Optional[Dict] = dict(),
+    **kwargs
 ):
     draw_img = np.array(img)
     for i, box in enumerate(bboxes):
@@ -34,6 +35,8 @@ def _plot_boxes(
             category = class_map.get(int(box[-1]), str(int(box[-1])))
         else:
             category = box[-1]
+        if kwargs.get("truncate_label",None) is not None:
+            category = "".join([l[0].lower() for l in category.split(kwargs.get("truncate_label"))])
         if scores is not None:
             category = category + ":" + str(round(scores[i], 2))
         color = class_color_map.get(int(box[-1]), "green")

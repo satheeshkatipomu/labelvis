@@ -5,6 +5,7 @@ Created: Wednesday, 2nd December 2020 4:29:37 pm
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from tabulate import tabulate
 from random import shuffle
 from joblib import Parallel, delayed
 from typing import Optional, Tuple
@@ -51,7 +52,20 @@ class BaseDataLoader:
             delayed(self.__getitem__)(idx) for idx in img_indices
         )
         return r
-
+    
+    def get_stats(self):
+        
+        headers = ["Category ID","Category Name", "Num Instances"]
+        records = []
+        cat_ids = list(self.df.category.dropna().value_counts().index.astype('int64'))
+        counts = list(self.df.category.dropna().value_counts().values.astype('int64'))
+        cat_dict = dict(sorted(zip(cat_ids,counts)))
+        
+        for cat_id,count in cat_dict.items():
+            cat_name = self.class_map[cat_id]
+            records.append([cat_id,cat_name,count])
+        return tabulate(records, headers=headers, tablefmt="fancy_grid",numalign="left")
+    
     def apply_filters(self, **kwargs):
         df = self.df.copy()
         if (

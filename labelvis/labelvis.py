@@ -80,6 +80,11 @@ class LabelVisualizer:
             self.class_color_map[cat_id] = color
             if color in avail_colors:
                 avail_colors.remove(color)
+        self.df = self.dataloader.df
+        self.stats = self.dataloader.get_stats()
+        
+    def get_stats(self):
+        print(self.stats)
 
     def _check_num_imgs(self) -> int:
         file_counts = collections.Counter(p.suffix for p in self.imgs_path.iterdir())
@@ -130,6 +135,7 @@ class LabelVisualizer:
                     scores,
                     class_map=self.class_map,
                     class_color_map=self.class_color_map,
+                    **kwargs
                 )
                 image_names.append(img_name)
             except:
